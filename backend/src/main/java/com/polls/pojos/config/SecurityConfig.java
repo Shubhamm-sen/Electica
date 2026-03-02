@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -72,16 +73,17 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    // ✅ PRODUCTION + LOCAL CORS CONFIG
+    // 🔥 FINAL CORS CONFIG (Supports Vercel Preview URLs)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173",          // Vite local
-                "http://localhost:3000",          // Optional React default
-                "https://electica.vercel.app"     // Vercel production
+        // Allow localhost + Vercel production + Vercel preview URLs
+        configuration.setAllowedOriginPatterns(List.of(
+                "http://localhost:*",
+                "https://electica.vercel.app",
+                "https://*.vercel.app"
         ));
 
         configuration.setAllowedMethods(List.of(
@@ -89,7 +91,6 @@ public class SecurityConfig {
         ));
 
         configuration.setAllowedHeaders(List.of("*"));
-
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
